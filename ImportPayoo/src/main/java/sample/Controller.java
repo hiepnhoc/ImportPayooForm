@@ -4,11 +4,9 @@ import de.bytefish.pgbulkinsert.PgBulkInsert;
 import de.bytefish.pgbulkinsert.util.PostgreSqlUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.FileChooser;
@@ -18,6 +16,7 @@ import org.apache.poi.ss.usermodel.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -26,8 +25,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 
-public class Controller {
+public class Controller  implements Initializable {
     @FXML
     public AnchorPane archorPane;
 
@@ -55,9 +55,17 @@ public class Controller {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         LocalDateTime now = LocalDateTime.now();
         String trans_date=now.format(formatter);
-        cadenlar=new DatePicker(LocalDate.of(1998, 10, 8));
-        cadenlar.setValue(LocalDate.of(1998, 10, 8));
+        //cadenlar=new DatePicker(LocalDate.of(1998, 10, 8));
+        //cadenlar.setValue(LocalDate.of(1998, 10, 8));
     }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+        cadenlar.setValue(LocalDate.now());
+
+    }
+
 
 
     public void load(ActionEvent event) throws IOException, SQLException {
@@ -65,57 +73,95 @@ public class Controller {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open file");
         File file = fileChooser.showOpenDialog(archorPane.getScene().getWindow());
-        txtFile.setText(file.getAbsolutePath());
 
+        if(file!=null) {
+            txtFile.setText(file.getAbsolutePath());
+        }
 
     }
 
-    public void execute(ActionEvent event) throws SQLException, IOException {
-        // Creating a Workbook from an Excel file (.xls or .xlsx)
-        Workbook workbook = WorkbookFactory.create(new File(txtFile.getText()));
+    public void execute(ActionEvent event) throws SQLException, IOException, InterruptedException {
 
-        // Retrieving the number of sheets in the Workbook
-        System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
+         if(txtFile.getText()==null || txtFile.getText().equals("")){
+             Alert alert=new Alert(Alert.AlertType.ERROR,"Bạn chưa upload file");
+             alert.showAndWait();
+             return;
+         }
 
-        //read data excel to list object
-        // Getting the Sheet at index zero
-        Sheet sheet = workbook.getSheetAt(0);
-        // Create a DataFormatter to format and get each cell's value as String
-        DataFormatter dataFormatter = new DataFormatter();
+//        // Creating a Workbook from an Excel file (.xls or .xlsx)
+//        Workbook workbook = WorkbookFactory.create(new File(txtFile.getText()));
+//
+//        // Retrieving the number of sheets in the Workbook
+//        System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
+//
+//        //read data excel to list object
+//        // Getting the Sheet at index zero
+//        Sheet sheet = workbook.getSheetAt(0);
+//        // Create a DataFormatter to format and get each cell's value as String
+//        DataFormatter dataFormatter = new DataFormatter();
+//
+//        List<PayooTransaction> payooTransactionList=new ArrayList<>();
+//
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+//        LocalDateTime now = LocalDateTime.now();
+//        String trans_date=now.format(formatter);
+//        for (int i=3;i< sheet.getPhysicalNumberOfRows();i++) {
+//            Row row=sheet.getRow(i);
+//            if(row.getCell(1)!=null && !dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)).equals("")) {
+//                PayooTransaction payooTransaction = PayooTransaction.builder().trans_date(trans_date)
+//                        .create_date(dataFormatter.formatCellValue(sheet.getRow(i).getCell(0)))
+//                        .vendor_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)))
+//                        .order_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(2)))
+//                        .amount(dataFormatter.formatCellValue(sheet.getRow(i).getCell(4)).replace(",",""))
+//                        .full_name(dataFormatter.formatCellValue(sheet.getRow(i).getCell(5)))
+//                        .client_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(3))).build();
+//
+//                payooTransactionList.add(payooTransaction);
+//            }
+//        }
+//
+//        //insert database
+//        insertDatabase(payooTransactionList,trans_date);
+//
+//        //
+//        txtRecord.setText(String.valueOf(payooTransactionList.size()));
 
-        List<PayooTransaction> payooTransactionList=new ArrayList<>();
+        Thread thread = new Thread(() -> {
+            this.testLoad();
+        });
+        thread.setDaemon(true);
+        thread.start();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        LocalDateTime now = LocalDateTime.now();
-        String trans_date=now.format(formatter);
-        for (int i=3;i< sheet.getPhysicalNumberOfRows();i++) {
-            Row row=sheet.getRow(i);
-            if(row.getCell(1)!=null && !dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)).equals("")) {
-                PayooTransaction payooTransaction = PayooTransaction.builder().trans_date(trans_date)
-                        .create_date(dataFormatter.formatCellValue(sheet.getRow(i).getCell(0)))
-                        .vendor_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)))
-                        .order_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(2)))
-                        .amount(dataFormatter.formatCellValue(sheet.getRow(i).getCell(4)).replace(",",""))
-                        .full_name(dataFormatter.formatCellValue(sheet.getRow(i).getCell(5)))
-                        .client_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(3))).build();
-
-                payooTransactionList.add(payooTransaction);
-            }
-        }
-
-        //insert database
-        insertDatabase(payooTransactionList,trans_date);
-
-        //
-        txtRecord.setText(String.valueOf(payooTransactionList.size()));
+        Alert mylert = new Alert(Alert.AlertType.INFORMATION,"Operation in Progress");
+        mylert.getButtonTypes().clear();
+        mylert.setResizable(true);
+        mylert.getDialogPane().setPrefSize(480, 170);
+        mylert.showAndWait();
+        thread.join();
+        mylert.close();
 
         //enable button
         btnSettle.setDisable(false);
+
+         //reset txt file
+        txtFile.setText("");
     }
 
     public void settle(ActionEvent event) throws SQLException {
-        settleStore();
+        LocalDate ld=cadenlar.getValue();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        String trans_date=ld.format(formatter);
+
+        //settleStore(trans_date);
         btnSettle.setDisable(true);
+    }
+
+    private void testLoad()
+    {
+        for(int i=0;i< 3000;i++)
+        {
+            System.out.println(i);
+        }
     }
 
     private void insertDatabase(List<PayooTransaction> payooTransactionList,String transDate) throws SQLException {
@@ -141,13 +187,13 @@ public class Controller {
         conn.close();
     }
 
-    private void settleStore() throws SQLException {
+    private void settleStore(String trans_date) throws SQLException {
         Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
         Statement stmt = conn.createStatement();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        LocalDateTime now = LocalDateTime.now();
-        String trans_date=now.format(formatter);
+//
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+//        LocalDateTime now = LocalDateTime.now();
+//        String trans_date=now.format(formatter);
 
         String storeProc=String.format("CALL payoo.sp_insert_payment_settle('%s');",trans_date);
         int result =stmt.executeUpdate(storeProc);
