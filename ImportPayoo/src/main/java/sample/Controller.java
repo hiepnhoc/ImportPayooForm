@@ -95,6 +95,12 @@ public class Controller  implements Initializable {
             {
                 setOnFailed(a -> {
                     alert.close();
+                    Alert alert1 = new Alert(
+                            Alert.AlertType.ERROR,
+                            getException().getMessage()
+                    );
+                    alert1.showAndWait();
+
                     updateMessage("Failed");
                 });
                 setOnSucceeded(a -> {

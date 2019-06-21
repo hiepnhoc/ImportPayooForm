@@ -10,9 +10,9 @@
 <AnchorPane fx:id="archorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="300.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <children>
       <Button fx:id="btnSettle" disable="true" layoutX="14.0" layoutY="135.0" mnemonicParsing="false" onAction="#settle" prefHeight="25.0" prefWidth="76.0" text="Settle" />
-      <Button fx:id="btnUploadFile" layoutX="14.0" layoutY="57.0" mnemonicParsing="false" onAction="#load" text="Upload File" />
-      <TextField fx:id="txtFile" editable="false" layoutX="14.0" layoutY="20.0" prefHeight="25.0" prefWidth="471.0" />
-      <Button fx:id="btnExecute" layoutX="104.0" layoutY="57.0" mnemonicParsing="false" onAction="#execute" prefHeight="25.0" prefWidth="76.0" text="Execute" />
+      <Button fx:id="btnUploadFile" layoutX="410.0" layoutY="20.0" mnemonicParsing="false" onAction="#load" text="Upload File" />
+      <TextField fx:id="txtFile" editable="false" layoutX="14.0" layoutY="20.0" prefHeight="25.0" prefWidth="383.0" />
+      <Button fx:id="btnExecute" layoutX="15.0" layoutY="57.0" mnemonicParsing="false" onAction="#execute" prefHeight="25.0" prefWidth="76.0" text="Execute" />
       <DatePicker fx:id="cadenlar" disable="true" editable="false" layoutX="14.0" layoutY="97.0" />
       <Label fx:id="lbTotal" layoutX="14.0" layoutY="192.0" text="Total row : " />
       <TextField fx:id="txtRecord" editable="false" layoutX="73.0" layoutY="188.0" prefHeight="25.0" prefWidth="65.0" promptText="0" />
