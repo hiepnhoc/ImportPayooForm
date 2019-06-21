@@ -32,6 +32,13 @@
     <orderEntry type="library" name="Maven: io.opencensus:opencensus-api:0.18.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.api:api-common:1.7.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.api.grpc:proto-google-common-protos:1.14.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.apis:google-api-services-pubsub:v1-rev20190429-1.28.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.api-client:google-api-client:1.28.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.oauth-client:google-oauth-client:1.28.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.http-client:google-http-client-apache:2.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.5" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.9" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
     <orderEntry type="library" name="Maven: com.google.auth:google-auth-library-oauth2-http:0.13.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.http-client:google-http-client:1.28.0" level="project" />
     <orderEntry type="library" name="Maven: io.opencensus:opencensus-contrib-http-util:0.18.0" level="project" />

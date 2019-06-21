@@ -2,6 +2,8 @@ package sample;
 
 import de.bytefish.pgbulkinsert.PgBulkInsert;
 import de.bytefish.pgbulkinsert.util.PostgreSqlUtils;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -22,10 +24,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Controller  implements Initializable {
     @FXML
@@ -38,7 +37,7 @@ public class Controller  implements Initializable {
     public DatePicker cadenlar;
 
     @FXML
-    public ProgressIndicator loading;
+    public ProgressIndicator progressIndi;
 
     @FXML
     public Button btnSettle;
@@ -50,23 +49,10 @@ public class Controller  implements Initializable {
     public static final String USER = "postgres";
     public static final String PASS = "postgres";
 
-    public Controller()
-    {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        LocalDateTime now = LocalDateTime.now();
-        String trans_date=now.format(formatter);
-        //cadenlar=new DatePicker(LocalDate.of(1998, 10, 8));
-        //cadenlar.setValue(LocalDate.of(1998, 10, 8));
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         cadenlar.setValue(LocalDate.now());
-
     }
-
-
 
     public void load(ActionEvent event) throws IOException, SQLException {
         //loading.setProgress(0);
@@ -88,58 +74,112 @@ public class Controller  implements Initializable {
              return;
          }
 
-//        // Creating a Workbook from an Excel file (.xls or .xlsx)
-//        Workbook workbook = WorkbookFactory.create(new File(txtFile.getText()));
+        // Creating a Workbook from an Excel file (.xls or .xlsx)
+        Workbook workbook = WorkbookFactory.create(new File(txtFile.getText()));
+
+        // Retrieving the number of sheets in the Workbook
+        System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
+
+
+        Label processResult = new Label();
+        Alert alert = new Alert(
+                Alert.AlertType.INFORMATION,
+                "Operation in progress"
+        );
+        alert.setTitle("Running Operation");
+        alert.setHeaderText("Please wait... ");
+        alert.setGraphic(progressIndi);
+        Task<Void> task = new Task<Void>() {
+            final int N_ITERATIONS = 5;
+
+            {
+                setOnFailed(a -> {
+                    alert.close();
+                    updateMessage("Failed");
+                });
+                setOnSucceeded(a -> {
+                    alert.close();
+                    updateMessage("Succeeded");
+                });
+                setOnCancelled(a -> {
+                    alert.close();
+                    updateMessage("Cancelled");
+                });
+            }
+
+            @Override
+            protected Void call() throws Exception {
+                updateMessage("Processing");
+
+//                int i;
+//                for (i = 0; i < N_ITERATIONS; i++) {
+//                    if (isCancelled()) {
+//                        break;
+//                    }
 //
-//        // Retrieving the number of sheets in the Workbook
-//        System.out.println("Workbook has " + workbook.getNumberOfSheets() + " Sheets : ");
+//                    updateProgress(i, N_ITERATIONS);
 //
-//        //read data excel to list object
-//        // Getting the Sheet at index zero
-//        Sheet sheet = workbook.getSheetAt(0);
-//        // Create a DataFormatter to format and get each cell's value as String
-//        DataFormatter dataFormatter = new DataFormatter();
-//
-//        List<PayooTransaction> payooTransactionList=new ArrayList<>();
-//
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-//        LocalDateTime now = LocalDateTime.now();
-//        String trans_date=now.format(formatter);
-//        for (int i=3;i< sheet.getPhysicalNumberOfRows();i++) {
-//            Row row=sheet.getRow(i);
-//            if(row.getCell(1)!=null && !dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)).equals("")) {
-//                PayooTransaction payooTransaction = PayooTransaction.builder().trans_date(trans_date)
-//                        .create_date(dataFormatter.formatCellValue(sheet.getRow(i).getCell(0)))
-//                        .vendor_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)))
-//                        .order_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(2)))
-//                        .amount(dataFormatter.formatCellValue(sheet.getRow(i).getCell(4)).replace(",",""))
-//                        .full_name(dataFormatter.formatCellValue(sheet.getRow(i).getCell(5)))
-//                        .client_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(3))).build();
-//
-//                payooTransactionList.add(payooTransaction);
-//            }
+//                    try {
+//                        Thread.sleep(1_000);
+//                    } catch (InterruptedException e) {
+//                        Thread.interrupted();
+//                    }
+//                }
+
+                //read data excel to list object
+                // Getting the Sheet at index zero
+                Sheet sheet = workbook.getSheetAt(0);
+                // Create a DataFormatter to format and get each cell's value as String
+                DataFormatter dataFormatter = new DataFormatter();
+
+                List<PayooTransaction> payooTransactionList=new ArrayList<>();
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+                LocalDateTime now = LocalDateTime.now();
+                String trans_date=now.format(formatter);
+                for (int i=3;i< sheet.getPhysicalNumberOfRows();i++) {
+                    Row row=sheet.getRow(i);
+                    if(row.getCell(1)!=null && !dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)).equals("")) {
+                        PayooTransaction payooTransaction = PayooTransaction.builder().trans_date(trans_date)
+                                .create_date(dataFormatter.formatCellValue(sheet.getRow(i).getCell(0)))
+                                .vendor_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(1)))
+                                .order_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(2)))
+                                .amount(dataFormatter.formatCellValue(sheet.getRow(i).getCell(4)).replace(",",""))
+                                .full_name(dataFormatter.formatCellValue(sheet.getRow(i).getCell(5)))
+                                .client_code(dataFormatter.formatCellValue(sheet.getRow(i).getCell(3))).build();
+
+                        payooTransactionList.add(payooTransaction);
+                    }
+                }
+
+                //insert database
+                insertDatabase(payooTransactionList,trans_date);
+
+                        //
+                txtRecord.setText(String.valueOf(payooTransactionList.size()));
+
+//                if (!isCancelled()) {
+//                    updateProgress(i, N_ITERATIONS);
+//                }
+
+                return null;
+            }
+        };
+
+        progressIndi.progressProperty().bind(task.progressProperty());
+        processResult.textProperty().unbind();
+        processResult.textProperty().bind(task.messageProperty());
+
+        Thread taskThread = new Thread(
+                task
+        );
+        taskThread.start();
+
+        alert.initOwner(archorPane.getScene().getWindow());
+        Optional<ButtonType> result = alert.showAndWait();
+//        if (result.isPresent() && result.get() == ButtonType.CANCEL && task.isRunning()) {
+//            task.cancel();
 //        }
-//
-//        //insert database
-//        insertDatabase(payooTransactionList,trans_date);
-//
-//        //
-//        txtRecord.setText(String.valueOf(payooTransactionList.size()));
-
-        Thread thread = new Thread(() -> {
-            this.testLoad();
-        });
-        thread.setDaemon(true);
-        thread.start();
-
-        Alert mylert = new Alert(Alert.AlertType.INFORMATION,"Operation in Progress");
-        mylert.getButtonTypes().clear();
-        mylert.setResizable(true);
-        mylert.getDialogPane().setPrefSize(480, 170);
-        mylert.showAndWait();
-        thread.join();
-        mylert.close();
-
         //enable button
         btnSettle.setDisable(false);
 
@@ -156,12 +196,13 @@ public class Controller  implements Initializable {
         btnSettle.setDisable(true);
     }
 
-    private void testLoad()
+    public void testLoad()
     {
         for(int i=0;i< 3000;i++)
         {
             System.out.println(i);
         }
+        return;
     }
 
     private void insertDatabase(List<PayooTransaction> payooTransactionList,String transDate) throws SQLException {
@@ -203,3 +244,4 @@ public class Controller  implements Initializable {
         conn.close();
     }
 }
+
