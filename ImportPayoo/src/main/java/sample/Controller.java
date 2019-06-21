@@ -1,18 +1,13 @@
 package sample;
 
-import de.bytefish.pgbulkinsert.PgBulkInsert;
-import de.bytefish.pgbulkinsert.util.PostgreSqlUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.FlowPane;
 import javafx.stage.FileChooser;
-import mapping.PayooTransactionMapping;
 import model.PayooTransaction;
 import org.apache.poi.ss.usermodel.*;
 
@@ -20,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -55,21 +49,26 @@ public class Controller  implements Initializable {
     }
 
     public void load(ActionEvent event) throws IOException, SQLException {
-        //loading.setProgress(0);
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open file");
-        File file = fileChooser.showOpenDialog(archorPane.getScene().getWindow());
+        try {
+            //loading.setProgress(0);
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Open file");
+            File file = fileChooser.showOpenDialog(archorPane.getScene().getWindow());
 
-        if(file!=null) {
-            txtFile.setText(file.getAbsolutePath());
+            if (file != null) {
+                txtFile.setText(file.getAbsolutePath());
+            }
+        }catch (Exception e)
+        {
+            Alert alert=new Alert(Alert.AlertType.ERROR,e.getMessage());
+            alert.showAndWait();
         }
-
     }
 
     public void execute(ActionEvent event) throws SQLException, IOException, InterruptedException {
 
          if(txtFile.getText()==null || txtFile.getText().equals("")){
-             Alert alert=new Alert(Alert.AlertType.ERROR,"Bạn chưa upload file");
+             Alert alert=new Alert(Alert.AlertType.ERROR,"File not upload !!!");
              alert.showAndWait();
              return;
          }
@@ -94,14 +93,19 @@ public class Controller  implements Initializable {
 
             {
                 setOnFailed(a -> {
-                    alert.close();
-                    Alert alert1 = new Alert(
-                            Alert.AlertType.ERROR,
-                            getException().getMessage()
-                    );
-                    alert1.showAndWait();
+//                    alert.close();
+//                    Alert alert1 = new Alert(
+//                            Alert.AlertType.INFORMATION,
+//                            getException().getMessage().substring(0,20)
+//                    );
+                    //alert1.showAndWait();
+                    alert.setHeaderText("ERROR");
+                    alert.setContentText(getException().getMessage());
 
                     updateMessage("Failed");
+
+
+                    btnSettle.setDisable(true);
                 });
                 setOnSucceeded(a -> {
                     alert.close();
@@ -198,18 +202,13 @@ public class Controller  implements Initializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
         String trans_date=ld.format(formatter);
 
-        //settleStore(trans_date);
+        settleStore(trans_date);
+
+
+
         btnSettle.setDisable(true);
     }
 
-    public void testLoad()
-    {
-        for(int i=0;i< 3000;i++)
-        {
-            System.out.println(i);
-        }
-        return;
-    }
 
     private void insertDatabase(List<PayooTransaction> payooTransactionList,String transDate) throws SQLException {
         String updateStmt ="INSERT INTO payoo.fico_payoo_imp\n" +
@@ -235,19 +234,35 @@ public class Controller  implements Initializable {
     }
 
     private void settleStore(String trans_date) throws SQLException {
-        Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
-        Statement stmt = conn.createStatement();
+        try {
+            Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            Statement stmt = conn.createStatement();
 //
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 //        LocalDateTime now = LocalDateTime.now();
 //        String trans_date=now.format(formatter);
 
-        String storeProc=String.format("CALL payoo.sp_insert_payment_settle('%s');",trans_date);
-        int result =stmt.executeUpdate(storeProc);
+            String storeProc = String.format("CALL payoo.sp_insert_payment_settle('%s');", trans_date);
+            int result = stmt.executeUpdate(storeProc);
 
-        System.out.println("settleStore: OK" + result);
+            System.out.println("settleStore: OK" + result);
 
-        conn.close();
+            conn.close();
+
+            Alert alert1 = new Alert(
+                    Alert.AlertType.INFORMATION,
+                    "Settle successfully!"
+            );
+            alert1.showAndWait();
+        }
+        catch (Exception e)
+        {
+            Alert alert1 = new Alert(
+                    Alert.AlertType.ERROR,
+                   e.getMessage()
+            );
+            alert1.showAndWait();
+        }
     }
 }
 
