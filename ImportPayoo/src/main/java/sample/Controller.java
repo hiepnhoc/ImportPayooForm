@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import model.PayooTransaction;
 import org.apache.poi.ss.usermodel.*;
 
@@ -46,6 +47,14 @@ public class Controller  implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         cadenlar.setValue(LocalDate.now());
+       // Window window=archorPane.getScene().getWindow();
+        //window.setOnCloseRequest(e->closeProgram());
+
+    }
+
+    public void shutdown(){
+        Alert a=new Alert(Alert.AlertType.INFORMATION,"Are u want to close", ButtonType.APPLY);
+        a.showAndWait();
     }
 
     public void load(ActionEvent event) throws IOException, SQLException {
@@ -110,10 +119,12 @@ public class Controller  implements Initializable {
                 setOnSucceeded(a -> {
                     alert.close();
                     updateMessage("Succeeded");
+                    btnSettle.setDisable(false);
                 });
                 setOnCancelled(a -> {
                     alert.close();
                     updateMessage("Cancelled");
+                    btnSettle.setDisable(true);
                 });
             }
 
@@ -190,8 +201,8 @@ public class Controller  implements Initializable {
 //        if (result.isPresent() && result.get() == ButtonType.CANCEL && task.isRunning()) {
 //            task.cancel();
 //        }
-        //enable button
-        btnSettle.setDisable(false);
+//        //enable button
+//        btnSettle.setDisable(false);
 
          //reset txt file
         txtFile.setText("");
@@ -208,7 +219,6 @@ public class Controller  implements Initializable {
 
         btnSettle.setDisable(true);
     }
-
 
     private void insertDatabase(List<PayooTransaction> payooTransactionList,String transDate) throws SQLException {
         String updateStmt ="INSERT INTO payoo.fico_payoo_imp\n" +
