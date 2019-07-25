@@ -1,5 +1,6 @@
 model\PayooTransaction$PayooTransactionBuilder.class
 sample\Controller.class
+mapping\PayooTransactionMapping.class
 model\PayooTransaction.class
 sample\Controller$1.class
 sample\Main.class
