@@ -188,7 +188,7 @@ public class Controller implements Initializable {
                 }
 
                 //get ra maxdate
-                Comparator<PayooTransaction> comparator = Comparator.comparing(PayooTransaction::getCreate_date);
+                Comparator<PayooTransaction> comparator = Comparator.comparing(PayooTransaction::getCreateDateFormat);
                 PayooTransaction minObject = payooTransactionList.stream().max(comparator).get();
 
 

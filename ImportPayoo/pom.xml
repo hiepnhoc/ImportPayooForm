@@ -6,7 +6,7 @@
 
     <groupId>groupId</groupId>
     <artifactId>ImportPayoo</artifactId>
-    <version>PRODUCTION.2.3-SNAPSHOT</version>
+    <version>UAT.2.5-120819</version>
     <build>
         <plugins>
             <plugin>
